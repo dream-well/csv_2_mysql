@@ -8,9 +8,11 @@
     "start": "ts-node ."
   },
   "dependencies": {
+    "@types/express": "^4.17.17",
     "@types/mysql": "^2.15.21",
     "csv-parser": "^3.0.0",
     "dotenv": "^16.0.3",
+    "express": "^4.18.2",
     "json-2-csv": "^3.20.0",
     "mysql2": "^3.2.0",
     "ts-node": "^10.9.1",
