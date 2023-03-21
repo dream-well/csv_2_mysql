@@ -26,6 +26,6 @@ void async function main() {
     const files = readdirSync(process.env.csv_folder).filter(name => name.endsWith(".csv"));
     console.log(files);
     for(let file of files) {
-        await csv2mysql(path.join(process.env.csv_folder, file.substr(0, file.length-4)));
+        await csv2mysql(path.join(process.env.csv_folder, file.substr(0, file.length-4)), file);
     }
 }()
