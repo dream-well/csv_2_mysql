@@ -20,13 +20,19 @@ export default function csv2mysql(filename, tablename = undefined) {
     let finalRowCount;
     if(!tablename) tablename = filename;
     
-    fs.createReadStream(filename + '.csv')
+    schema = `DROP TABLE IF EXISTS \`${tablename}\`;`;
+    connection.query(schema, (error) => {
+      if (error) {
+            console.error('Failed to create table:', error);
+            return;
+      }
+      fs.createReadStream(filename + '.csv')
       .pipe(csv())
       .on('data', (data) => {
         if(!header) { // if header
             console.log('create table');
             header = data;
-            columns = Object.keys(header).map((column) => `\`${column}\` VARCHAR(255)`);
+            columns = Object.keys(header).map((column) => `\`${column}\` text`);
             schema = `CREATE TABLE IF NOT EXISTS \`${tablename}\` (${columns.join(', ')})`;
             connection.query(schema, (error) => {
                 if (error) {
@@ -39,7 +45,7 @@ export default function csv2mysql(filename, tablename = undefined) {
         }
         cache.push(data);
         rowCount ++;
-        if(cache.length == 500) {
+        if(cache.length == 10) {
             insert_rows(cache);
             cache = [];
         }
@@ -51,10 +57,11 @@ export default function csv2mysql(filename, tablename = undefined) {
         }
         console.log('upload ended');
       });
+    })
     
     function insert_rows(rows) {
         // Insert data into MySQL table
-        const values = rows.map((result) => `(${Object.values(result).map((value) => `"${value}"`).join(', ')})`);
+        const values = rows.map((result) => `(${Object.values(result).map((value) => `"${(value as string).replace(/\"/g, `\\"`)}"`).join(', ')})`);
         const query = `INSERT INTO \`${tablename}\` VALUES ${values.join(', ')}`;
         connection.query(query, (error) => {
             if (error) {
