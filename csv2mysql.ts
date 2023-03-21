@@ -19,12 +19,15 @@ export default function csv2mysql(filename, tablename = undefined) {
     let rowCount;
     let finalRowCount;
     if(!tablename) tablename = filename;
-    
-    schema = `DROP TABLE IF EXISTS \`${tablename}\`;`;
-    connection.query(schema, (error) => {
+    schema = `Select * from INFORMATION_SCHEMA.TABLES where TABLE_NAME = '${tablename}';`;
+    connection.query(schema, (error, result) => {
       if (error) {
-            console.error('Failed to create table:', error);
+            console.error('error fetching table schema', error);
             return;
+      }
+      if((result as Array<any>).length > 0) {
+        console.log(tablename, 'alreay exists');
+        return;
       }
       fs.createReadStream(filename + '.csv')
       .pipe(csv())
@@ -45,7 +48,7 @@ export default function csv2mysql(filename, tablename = undefined) {
         }
         cache.push(data);
         rowCount ++;
-        if(cache.length == 10) {
+        if(cache.length == 100) {
             insert_rows(cache);
             cache = [];
         }

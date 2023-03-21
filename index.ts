@@ -21,12 +21,23 @@ const app = express();
 //     console.log("app is listening");
 // })
 
+let running = false;
 
-void async function main() {
+async function main() {
+    if(running) return;
+    running = true;
     const files = readdirSync(process.env.csv_folder).filter(name => name.endsWith(".csv"));
+    console.log("============= Convert CSV to MySQL ==============")
     console.log(files);
     for(let file of files) {
         const tablename = file.substr(0, file.length-4);
         await csv2mysql(path.join(process.env.csv_folder, tablename), tablename);
     }
-}()
+    running = false;
+}
+
+main();
+setInterval(main, 5000);
+
+
+
